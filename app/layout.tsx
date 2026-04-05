@@ -1,27 +1,29 @@
 // FILE: /app/layout.tsx
-import type { Metadata } from 'next'
-import '../styles/globals.css'
+
+import type { Metadata } from "next";
+import "../styles/globals.css";
 
 export const metadata: Metadata = {
-  title: 'Kavya Parmar — Game Dev · AI Engineer · Creative Technologist',
-  description: 'Teenage developer from India building games, AI tools, and cinematic web experiences.',
+  title: "KAVYA.SYS // Portfolio Interface v2.0",
+  description: "Kavya Parmar — Teen Developer | Futuristic Portfolio Experience",
+  keywords: ["developer", "portfolio", "web development", "teen coder"],
   openGraph: {
-    title: 'Kavya Parmar',
-    description: 'Game Dev · AI Engineer · Creative Technologist',
-    type: 'website',
+    title: "KAVYA.SYS // Portfolio Interface v2.0",
+    description: "Enter the system. Explore the portfolio.",
+    type: "website",
   },
-}
+};
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      </head>
-      <body className="noise antialiased">
+      <body className="scanlines">
         {children}
       </body>
     </html>
-  )
+  );
 }
