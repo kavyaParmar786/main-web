@@ -56,13 +56,7 @@ export default class GameScene extends Phaser.Scene {
       },
     });
 
-    // Camera
-    this.cameras.main.startFollow(
-      { x: this.player.getPosition().x } as Phaser.GameObjects.GameObject,
-      false,
-      0.08,
-      0
-    );
+    // Camera — manual scroll in update(), no startFollow needed
     this.cameras.main.setZoom(1);
 
     // Input
