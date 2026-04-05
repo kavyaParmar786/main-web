@@ -125,8 +125,8 @@ export default class WorldMap {
         fontFamily: "'Orbitron', monospace",
         fontSize: "11px",
         color: "#00d4ff",
-        alpha: 0.3,
       });
+      text.setAlpha(0.3);
       text.setDepth(5);
       this.zoneLabels.push(text);
     });
