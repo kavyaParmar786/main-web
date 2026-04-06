@@ -567,11 +567,7 @@ export default class WorldMap {
   }
 
   public getInteractableAt(x: number, _y: number, radius = 120): Interactable | null {
-    return (
-      this.interactables.find((obj) => Math.abs(obj.x - x) < radius) || null
-    );
-  }) || null
-    );
+    return this.interactables.find((obj) => Math.abs(obj.x - x) < radius) ?? null;
   }
 
   public destroy() {
