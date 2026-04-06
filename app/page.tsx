@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import BootScreen from "./components/BootScreen";
 import GameWorld from "./components/GameWorld";
 import ClassicMode from "./components/ClassicMode";
@@ -39,19 +39,18 @@ export default function Home() {
     return () => window.removeEventListener("keydown", handleKey);
   }, []);
 
-  const handleBootComplete = () => {
+  const handleBootComplete = useCallback(() => {
     setPhase("enter");
-  };
+  }, []);
 
-  const handleEnterWorld = () => {
+  const handleEnterWorld = useCallback(() => {
     setPhase("game");
-  };
+  }, []);
 
-  const toggleClassicMode = () => {
+  const toggleClassicMode = useCallback(() => {
     setClassicMode((prev) => !prev);
-    if (!classicMode) setPhase("classic");
-    else setPhase("game");
-  };
+    setPhase((prev) => prev === "classic" ? "game" : "classic");
+  }, []);
 
   return (
     <main className="relative w-screen h-screen overflow-hidden bg-dark-900">
@@ -118,7 +117,8 @@ function EnterScreen({
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [onEnter]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div

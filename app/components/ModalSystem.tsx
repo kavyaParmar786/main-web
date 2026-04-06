@@ -41,7 +41,6 @@ export default function ModalSystem({ project, onClose }: Props) {
   };
 
   const color = project.color || "#00d4ff";
-  const colorHex = parseInt(color.replace("#", ""), 16);
 
   return (
     <div

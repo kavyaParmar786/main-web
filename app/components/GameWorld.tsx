@@ -2,10 +2,10 @@
 
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import type GameScene from "../game/scenes/GameScene";
 import type { Interactable } from "../game/objects/WorldMap";
-import { useGameStore, Zone, ZONE_POSITIONS } from "../game/systems/gameStore";
+import { useGameStore, Zone } from "../game/systems/gameStore";
 import ModalSystem from "./ModalSystem";
 import UIOverlay from "./UIOverlay";
 import ZoneTransition from "./ZoneTransition";
@@ -13,7 +13,8 @@ import InteractHint from "./InteractHint";
 
 export default function GameWorld() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const gameRef = useRef<import("phaser").Game | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const gameRef = useRef<any>(null);
   const sceneRef = useRef<GameScene | null>(null);
   const [gameReady, setGameReady] = useState(false);
 
@@ -30,14 +31,14 @@ export default function GameWorld() {
   useEffect(() => {
     if (!containerRef.current || gameRef.current) return;
 
-    let game: import("phaser").Game;
+    let resizeHandler: (() => void) | null = null;
 
-    // Dynamic import Phaser (SSR-safe)
     const initPhaser = async () => {
       const Phaser = (await import("phaser")).default;
       const { default: GameSceneClass } = await import("../game/scenes/GameScene");
 
-      const config: import("phaser").Types.Core.GameConfig = {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const config: any = {
         type: Phaser.AUTO,
         width: window.innerWidth,
         height: window.innerHeight,
@@ -56,77 +57,76 @@ export default function GameWorld() {
         scale: {
           mode: Phaser.Scale.FIT,
           autoCenter: Phaser.Scale.CENTER_BOTH,
-          width: window.innerWidth,
-          height: window.innerHeight,
         },
       };
 
-      game = new Phaser.Game(config);
+      const game = new Phaser.Game(config);
       gameRef.current = game;
 
+      // Wait for scene to be ready via events
       game.events.once("ready", () => {
-        const scene = game.scene.getScene("GameScene") as GameScene;
-        sceneRef.current = scene;
-
-        // Bridge callbacks
-        scene.onZoneChange = (zone: Zone) => {
-          setCurrentZone(zone);
-        };
-
-        scene.onInteract = (obj: Interactable) => {
-          if (obj.type === "project" && obj.data) {
-            openModal(obj.data as Parameters<typeof openModal>[0]);
-          } else if (obj.type === "contact") {
-            // Scroll to contact UI overlay
-            document.getElementById("contact-overlay")?.scrollIntoView({ behavior: "smooth" });
-            const el = document.getElementById("contact-overlay");
-            if (el) {
-              el.style.opacity = "1";
-              el.style.pointerEvents = "all";
-            }
+        // Poll until GameScene is created
+        const tryGetScene = () => {
+          const scene = game.scene.getScene("GameScene") as GameScene | null;
+          if (!scene || !scene.sys.isActive()) {
+            setTimeout(tryGetScene, 100);
+            return;
           }
+
+          sceneRef.current = scene;
+
+          scene.onZoneChange = (zone: Zone) => {
+            setCurrentZone(zone);
+          };
+
+          scene.onInteract = (obj: Interactable) => {
+            if (obj.type === "project" && obj.data) {
+              openModal(obj.data as Parameters<typeof openModal>[0]);
+            }
+          };
+
+          scene.onPlayerMove = (x: number, y: number) => {
+            setPlayerPosition(x, y);
+          };
+
+          setGameReady(true);
+          storeSetReady(true);
         };
 
-        scene.onPlayerMove = (x: number, y: number) => {
-          setPlayerPosition(x, y);
-        };
-
-        setGameReady(true);
-        storeSetReady(true);
+        setTimeout(tryGetScene, 200);
       });
 
-      // Handle resize
-      const handleResize = () => {
-        if (game) {
-          game.scale.resize(window.innerWidth, window.innerHeight);
-        }
+      resizeHandler = () => {
+        game.scale.resize(window.innerWidth, window.innerHeight);
       };
-      window.addEventListener("resize", handleResize);
+      window.addEventListener("resize", resizeHandler);
     };
 
     initPhaser();
 
     return () => {
+      if (resizeHandler) {
+        window.removeEventListener("resize", resizeHandler);
+      }
       if (gameRef.current) {
         gameRef.current.destroy(true);
         gameRef.current = null;
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Expose teleport function to nav
-  const teleportToZone = (zone: Zone) => {
+  const teleportToZone = useCallback((zone: Zone) => {
     sceneRef.current?.teleportToZone(zone);
-  };
+  }, []);
 
-  // Register teleport globally for NavigationOverlay
+  // Expose teleport globally for NavigationOverlay
   useEffect(() => {
     (window as unknown as Record<string, unknown>).__kavyaTeleport = teleportToZone;
-  }, [gameReady]);
+  }, [teleportToZone]);
 
   return (
     <div className="relative w-screen h-screen">
-      {/* Phaser container */}
       <div
         id="phaser-container"
         ref={containerRef}
@@ -134,7 +134,6 @@ export default function GameWorld() {
         style={{ cursor: "none" }}
       />
 
-      {/* Loading overlay */}
       {!gameReady && (
         <div className="absolute inset-0 flex items-center justify-center z-50 bg-dark-900">
           <div className="text-center font-mono">
@@ -154,12 +153,10 @@ export default function GameWorld() {
         </div>
       )}
 
-      {/* React UI overlays on top of canvas */}
       {gameReady && <UIOverlay onTeleport={teleportToZone} />}
       {gameReady && <ZoneTransition />}
       {gameReady && <InteractHint />}
 
-      {/* Modal system */}
       {modalOpen && modalContent && (
         <ModalSystem project={modalContent} onClose={closeModal} />
       )}

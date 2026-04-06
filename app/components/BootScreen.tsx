@@ -87,6 +87,7 @@ export default function BootScreen({ onComplete }: Props) {
     };
     window.addEventListener("click", handleSkip);
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     return () => {
       clearInterval(progressInterval);
       clearInterval(glitchInterval);

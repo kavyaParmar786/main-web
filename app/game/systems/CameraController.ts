@@ -1,7 +1,7 @@
 // FILE: /app/game/systems/CameraController.ts
 
 import Phaser from "phaser";
-import { ZONE_POSITIONS, Zone } from "./gameStore";
+import { Zone } from "./gameStore";
 
 interface ShakeParams {
   intensity: number;
@@ -96,9 +96,6 @@ export default class CameraController {
 
   // ── Pan to world X position (for zone teleport) ────────────
   panTo(worldX: number, duration = 600) {
-    const screenW = this.camera.width;
-    const targetScrollX = Math.max(0, worldX - screenW * 0.35);
-
     this.camera.pan(
       worldX,
       this.camera.scrollY + this.camera.height / 2,

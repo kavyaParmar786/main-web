@@ -5,6 +5,8 @@
 import { useEffect, useRef, useState } from "react";
 import { PORTFOLIO_DATA } from "../game/systems/gameStore";
 
+const SECTIONS = ["about", "projects", "skills", "experience", "contact"];
+
 interface Props {
   onExit: () => void;
 }
@@ -14,7 +16,7 @@ export default function ClassicMode({ onExit }: Props) {
   const [activeSection, setActiveSection] = useState("about");
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const sections = ["about", "projects", "skills", "experience", "contact"];
+  // sections defined outside component as SECTIONS constant
 
   useEffect(() => {
     const el = containerRef.current;
@@ -22,10 +24,10 @@ export default function ClassicMode({ onExit }: Props) {
 
     const handleScroll = () => {
       setScrollY(el.scrollTop);
-      const sectionEls = sections.map((s) => document.getElementById(`classic-${s}`));
+      const sectionEls = SECTIONS.map((s) => document.getElementById(`classic-${s}`));
       sectionEls.forEach((sec, i) => {
         if (sec && el.scrollTop >= sec.offsetTop - 200) {
-          setActiveSection(sections[i]);
+          setActiveSection(SECTIONS[i]);
         }
       });
     };
@@ -58,7 +60,7 @@ export default function ClassicMode({ onExit }: Props) {
         </div>
 
         <nav className="hidden md:flex items-center gap-6">
-          {sections.map((s) => (
+          {SECTIONS.map((s) => (
             <button
               key={s}
               onClick={() => scrollToSection(s)}

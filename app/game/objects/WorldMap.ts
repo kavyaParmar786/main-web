@@ -162,7 +162,7 @@ export default class WorldMap {
     this.drawAll(camX);
   }
 
-  private drawAll(camX: number) {
+  private drawAll(_camX: number) {
     this.bgGraphics.clear();
     this.graphics.clear();
     this.buildingGraphics.clear();
@@ -566,12 +566,11 @@ export default class WorldMap {
     });
   }
 
-  public getInteractableAt(x: number, y: number, radius = 120): Interactable | null {
+  public getInteractableAt(x: number, _y: number, radius = 120): Interactable | null {
     return (
-      this.interactables.find((obj) => {
-        const dist = Math.hypot(obj.x - x, obj.y - (obj.y - obj.height / 2));
-        return Math.abs(obj.x - x) < radius;
-      }) || null
+      this.interactables.find((obj) => Math.abs(obj.x - x) < radius) || null
+    );
+  }) || null
     );
   }
 

@@ -105,7 +105,7 @@ export function useScramble(
  * Phaser Text scramble — for use with Phaser.GameObjects.Text
  */
 export function scramblePhaserText(
-  textObject: import("phaser").GameObjects.Text,
+  textObject: { setText: (t: string) => void },
   targetText: string,
   charRevealSpeed = 40
 ): Promise<void> {
